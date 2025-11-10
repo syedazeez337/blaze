@@ -15,8 +15,66 @@
 namespace sourcemeta::core {
 
 /// @ingroup jsonschema
-/// A set of vocabularies
-using Vocabularies = std::unordered_map<JSON::String, bool>;
+/// Vocabulary enumeration for known JSON Schema vocabularies
+enum class KnownVocabulary : uint32_t {
+  // Pre-vocabulary dialects (treated as vocabularies)
+  Draft00 = 1u << 0,
+  Draft01 = 1u << 1,
+  Draft02 = 1u << 2,
+  Draft03 = 1u << 3,
+  Draft03Hyper = 1u << 4,
+  Draft04 = 1u << 5,
+  Draft04Hyper = 1u << 6,
+  Draft06 = 1u << 7,
+  Draft06Hyper = 1u << 8,
+  Draft07 = 1u << 9,
+  Draft07Hyper = 1u << 10,
+  // 2019-09 vocabularies
+  Draft201909Core = 1u << 11,
+  Draft201909Applicator = 1u << 12,
+  Draft201909Validation = 1u << 13,
+  Draft201909MetaData = 1u << 14,
+  Draft201909Format = 1u << 15,
+  Draft201909Content = 1u << 16,
+  Draft201909HyperSchema = 1u << 17,
+  // 2020-12 vocabularies
+  Draft202012Core = 1u << 18,
+  Draft202012Applicator = 1u << 19,
+  Draft202012Unevaluated = 1u << 20,
+  Draft202012Validation = 1u << 21,
+  Draft202012MetaData = 1u << 22,
+  Draft202012FormatAnnotation = 1u << 23,
+  Draft202012FormatAssertion = 1u << 24,
+  Draft202012Content = 1u << 25
+};
+
+/// @ingroup jsonschema
+/// Optimized vocabulary set using bitflags for known vocabularies
+struct Vocabularies {
+  /// Bitflags for enabled known vocabularies
+  uint32_t enabled_known = 0;
+
+  /// Bitflags for disabled known vocabularies (for explicit false values)
+  uint32_t disabled_known = 0;
+
+  /// Fallback storage for custom/unknown vocabularies
+  std::unordered_map<JSON::String, bool> custom;
+
+  /// Check if a vocabulary is enabled
+  [[nodiscard]] auto contains(std::string_view uri) const -> bool;
+
+  /// Insert a vocabulary
+  auto insert(const std::pair<JSON::String, bool>& entry) -> void;
+
+  /// Get vocabulary status by URI
+  [[nodiscard]] auto find(std::string_view uri) const -> std::optional<bool>;
+
+  /// Merge another Vocabularies into this one
+  auto merge(const Vocabularies& other) -> void;
+
+  /// Get all active (enabled or disabled) vocabularies as key-value pairs
+  [[nodiscard]] auto all_vocabularies() const -> std::vector<std::pair<std::string, bool>>;
+};
 
 // Take a URI and get back a schema
 /// @ingroup jsonschema
